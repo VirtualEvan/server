@@ -5704,13 +5704,15 @@ dav.Client.prototype = {
      * @param {string} url Relative or absolute url
      * @param {Object} headers HTTP headers as an object.
      * @param {string} body HTTP request body.
+     * @param {string} responseType HTTP request response type.
      * @return {Promise}
      */
-    request : function(method, url, headers, body) {
+    request : function(method, url, headers, body, responseType) {
 
         var self = this;
         var xhr = this.xhrProvider();
         headers = headers || {};
+        responseType = responseType || "";
         
         if (this.userName) {
             headers['Authorization'] = 'Basic ' + btoa(this.userName + ':' + this.password);
@@ -5721,6 +5723,7 @@ dav.Client.prototype = {
         for(ii in headers) {
             xhr.setRequestHeader(ii, headers[ii]);
         }
+        xhr.responseType = responseType;
 
         // Work around for edge
         if (body === undefined) {

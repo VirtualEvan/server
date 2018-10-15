@@ -618,20 +618,27 @@
 		 * Returns the contents of the given file.
 		 *
 		 * @param {String} path path to file
+		 * @param {Array} headers headers to set
+		 * @param {String} responseType response type
 		 *
 		 * @return {Promise}
 		 */
-		getFileContents: function(path) {
+		getFileContents: function(path, headers, responseType) {
 			if (!path) {
 				throw 'Missing argument "path"';
 			}
 			var self = this;
 			var deferred = $.Deferred();
 			var promise = deferred.promise();
+			var headers = headers || {};
+			var reseponseType = responseType || "";
 
 			this._client.request(
 				'GET',
-				this._buildUrl(path)
+				this._buildUrl(path),
+				headers,
+				null,
+				reseponseType
 			).then(
 				function(result) {
 					if (self._isSuccessStatus(result.status)) {
