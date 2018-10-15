@@ -5704,10 +5704,73 @@ dav.Client.prototype = {
      * @param {string} url Relative or absolute url
      * @param {Object} headers HTTP headers as an object.
      * @param {string} body HTTP request body.
+     * @return {Promise}
+     */
+    request : function(method, url, headers, body) {
+
+        var self = this;
+        var xhr = this.xhrProvider();
+        headers = headers || {};
+        
+        if (this.userName) {
+            headers['Authorization'] = 'Basic ' + btoa(this.userName + ':' + this.password);
+            // xhr.open(method, this.resolveUrl(url), true, this.userName, this.password);
+        }
+        xhr.open(method, this.resolveUrl(url), true);
+        var ii;
+        for(ii in headers) {
+            xhr.setRequestHeader(ii, headers[ii]);
+        }
+
+        // Work around for edge
+        if (body === undefined) {
+            xhr.send();
+        } else {
+            xhr.send(body);
+        }
+
+        return new Promise(function(fulfill, reject) {
+
+            xhr.onreadystatechange = function() {
+
+                if (xhr.readyState !== 4) {
+                    return;
+                }
+
+                var resultBody = xhr.response;
+                if (xhr.status === 207) {
+                    resultBody = self.parseMultiStatus(xhr.response);
+                }
+
+                fulfill({
+                    body: resultBody,
+                    status: xhr.status,
+                    xhr: xhr
+                });
+
+            };
+
+            xhr.ontimeout = function() {
+
+                reject(new Error('Timeout exceeded'));
+
+            };
+
+        });
+
+    },
+
+    /**
+     * Performs a HTTP request, and returns a Promise
+     *
+     * @param {string} method HTTP method
+     * @param {string} url Relative or absolute url
+     * @param {Object} headers HTTP headers as an object.
+     * @param {string} body HTTP request body.
      * @param {string} responseType HTTP request response type.
      * @return {Promise}
      */
-    request : function(method, url, headers, body, responseType) {
+    requestRT : function(method, url, headers, body, responseType) {
 
         var self = this;
         var xhr = this.xhrProvider();
